@@ -1,3 +1,5 @@
+#!C:\Python27\python.exe
+
 from sys import *
 from getopt import *
 from os import *
@@ -35,7 +37,10 @@ available_servers = opc.servers()
 opc.connect( SERVER_NAME )
 
 ## To read data ...
-value, quality, time = opc.read( OPC_NAME_ROOT + 'Status.Generale' )
+try:
+	value, quality, time = opc.read( OPC_NAME_ROOT + 'Status.Generale' )
+except OpenOPC.TimeoutError:
+	print "TimeoutError occured"
 
 ## Short version ... onliy data
 #value = opc['Random.Int4']
