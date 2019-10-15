@@ -29,7 +29,7 @@ opcGroups = GelliBelloi.VAR_GROUPS_SUPER_COMPACT
 opc = OpenOPC.client()
 
 # Get available servers on localhost
-available_servers = OpenOPC.servers()
+available_servers = opc.servers()
 
 # Open Server
 opc.connect( SERVER_NAME )
@@ -40,7 +40,12 @@ value, quality, time = opc.read( OPC_NAME_ROOT + 'Status.Generale' )
 ## Short version ... onliy data
 #value = opc['Random.Int4']
 
+## read a grop of variable - opcGrops e' un array di stringhe
 #opc.read( opcGroups )
 
-
+## prova a leggere i singoli a parte
+for var in opcGroups:
+	print( var )
+	value = opc[ var ]
+	print( value )
 
