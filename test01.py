@@ -20,14 +20,35 @@ except ImportError:
 else:
 	pyro_found = True
 
-
-SERVER_NAME   = 'OPC.SimaticNET'   
+SERVER_NAME   = 'OPC.SimaticNET'
 OPC_NAME_ROOT = 'S7:[Collegamento_IM151_8]'
 
 
+def readSingleData(variableName):
+	val = None
+
+	try:
+		value, quality, time = opc.read( OPC_NAME_ROOT + 'variableName' )
+	except OpenOPC.TimeoutError:
+		print "TimeoutError occured"
+
+	return val
+
+
+def readGroupData(varGroup):
+	val = None
+
+	try:
+		val = opc.read( varGroup )
+	except OpenOPC.TimeoutError:
+		print "TimeoutError occured"
+
+	return val
+
+# Chose the groups of vars
 opcGroups = GelliBelloi.VAR_GROUPS_SUPER_COMPACT
-	
-# Initialize client DCOM mode	
+
+# Initialize client DCOM mode
 opc = OpenOPC.client()
 
 # Get available servers on localhost
@@ -36,27 +57,12 @@ available_servers = opc.servers()
 # Open Server
 opc.connect( SERVER_NAME )
 
-## To read SINGLE data ...
-try:
-	value, quality, time = opc.read( OPC_NAME_ROOT + 'Status.Generale' )
-except OpenOPC.TimeoutError:
-	print "TimeoutError occured"
-
-## Short version ... onliy data
-#value = opc['Random.Int4']
-
 ## read a GROUP of variable - opcGrops e' un array di stringhe
-try:
-	opc.read( opcGroups )
-except OpenOPC.TimeoutError:
-	print "TimeoutError occured"
+valuesGrouped = readGroupData(varGroup)
 
 ## prova a leggere i singoli a parte
 try:
-	for var in opcGroups:
-		print( var )
-		value = opc[ var ]
-		print( value )
+	for var in valuesGrouped:
+		print( len(value) )
 except OpenOPC.TimeoutError:
 	print "TimeoutError occured"
-
