@@ -14,12 +14,12 @@ import OpenOPC
 import GelliBelloi
 
 try:
-   import Pyro
+	import Pyro
 except ImportError:
-   pyro_found = False
+	pyro_found = False
 else:
-   pyro_found = True
-   
+	pyro_found = True
+
 
 SERVER_NAME   = 'OPC.SimaticNET'   
 OPC_NAME_ROOT = 'S7:[Collegamento_IM151_8]'
@@ -36,7 +36,7 @@ available_servers = opc.servers()
 # Open Server
 opc.connect( SERVER_NAME )
 
-## To read data ...
+## To read SINGLE data ...
 try:
 	value, quality, time = opc.read( OPC_NAME_ROOT + 'Status.Generale' )
 except OpenOPC.TimeoutError:
@@ -45,12 +45,18 @@ except OpenOPC.TimeoutError:
 ## Short version ... onliy data
 #value = opc['Random.Int4']
 
-## read a grop of variable - opcGrops e' un array di stringhe
-#opc.read( opcGroups )
+## read a GROUP of variable - opcGrops e' un array di stringhe
+try:
+	opc.read( opcGroups )
+except OpenOPC.TimeoutError:
+	print "TimeoutError occured"
 
 ## prova a leggere i singoli a parte
-for var in opcGroups:
-	print( var )
-	value = opc[ var ]
-	print( value )
+try:
+	for var in opcGroups:
+		print( var )
+		value = opc[ var ]
+		print( value )
+except OpenOPC.TimeoutError:
+	print "TimeoutError occured"
 
