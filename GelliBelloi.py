@@ -427,15 +427,15 @@ Gruppo3 = [VARS_GRUPPO_3_FASI, VARS_GRUPPO_3_INGRESSI, VARS_GRUPPO_3_ALLARMI]
 
 Generale = VARS_GENERALE
 
-Labels = [Generale, Gruppo1, Gruppo2, Gruppo3]
+#Labels = [Generale, Gruppo1, Gruppo2, Gruppo3]
 
-class LabelsClass:
+class Labels:
     Generale = VARS_GENERALE
-
+          
     class Gruppo1:
         Fasi = VARS_GRUPPO_1_FASI
         Ingressi = VARS_GRUPPO_1_INGRESSI
-        Allarmi = VARS_GRUPPO_1_ALLARMI
+        Allarmi = VARS_GRUPPO_1_ALLARMI            
     
     class Gruppo2:
         Fasi = VARS_GRUPPO_2_FASI
