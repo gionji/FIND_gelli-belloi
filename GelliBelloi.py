@@ -153,7 +153,6 @@ VARS_GRUPPO_1_ALLARMI = [
 	('Status.Gruppo1.Timeout[2]', 'db200.dbx61.5', 'bool', 'Gruppo 1 - Anomalia Sensori PX1610/PX1611 Bloccaggio Distaffatura'),
 	('Status.Gruppo1.Timeout[2]', 'db200.dbx61.6', 'bool', 'Gruppo 1 - Anomalia Sensori SQ1804/SQ1805 Pinza Disaccoppiatura'),
 	('Status.Gruppo1.Timeout[2]', 'db200.dbx61.7', 'bool', 'Gruppo 1 - Anomalia Sensori PX1902/PX1806 Disaccoppiatore Staffe'),
-	('Status.Gruppo1.Timeout[2]', 'db200.dbx60.0', 'bool', 'Gruppo 1 - Anomalia Sensori SQ1913/SQ1914 Bloccaggio Disaccoppiatura'),
 ]
 
 

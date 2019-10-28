@@ -70,20 +70,22 @@ def createJson(*elements):
     output = {}
 
     for couple in elements:
-        if isinstance(couple,tuple) and len(couple) == 2 and len(couple[0]) == len(couple[1]):
-            output.update( dict( zip( couple[LABELS], couple[DATA] ) ) )
-            #print(json.dumps(output, indent=4, sort_keys=True))
+            
+        if not isinstance(couple,tuple):
+            print('Problem with data: nON E UNATUPLA')
+        elif not len(couple) == 2:
+            print('Problem with data: non ci sono due elementi nella tupla: ', len(couple))
+        elif not len(couple[LABELS]) == len(couple[DATA]):
+            print('Problem with data: le liste non sono lunghe uguali: ', len(couple[DATA]), len(couple[LABELS]))
+            for i in range(0, max(len(couple[DATA]), len(couple[LABELS])) - 1):
+                print(i, couple[DATA][i], couple[LABELS][i])
         else:
-            print('Problem with data, impossible to create json')
+            print( 'OK' )
+            output.update( dict( zip( couple[LABELS], couple[DATA] ) ) )
 
     res = {'output' : output, 'callerInfo' : callerInfo}
     
-    try:
-        cane = json.dump(res)
-    except:
-        cane = None
-    
-    return cane
+    return res
 
 
 def sendJson(msg):
@@ -110,21 +112,23 @@ res = readGroupData( opcGroups )
 #print( [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] )
 
 
+#print(res)
+
 ## stampo le dimensioni dei
 if res != None:
     jjj = createJson( 
-                (res[0], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
-                (res[1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
-                (res[2], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
-                (res[3], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
-                (res[4], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
-                (res[5], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
-                (res[6], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
-                (res[7], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
-                (res[8], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
-                (res[9], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
+                (res[0][1] , [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
+                (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
+                (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
+                (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
+                (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
+                (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
+                (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
+                (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
+                (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
+                (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
                 )
-
+    print('\n\n')
     print(json.dumps(jjj, indent=4, sort_keys=True))
 
     sendJson(jjj)
