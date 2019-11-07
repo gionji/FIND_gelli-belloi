@@ -10,8 +10,9 @@ import types
 import datetime
 import re, time, csv
 import OpenOPC
+import time
 
-import request
+import requests
 
 import json
 
@@ -88,7 +89,7 @@ def createJson(*elements):
             for i in range(0, max(len(couple[DATA]), len(couple[LABELS])) - 1):
                 print(i, couple[DATA][i], couple[LABELS][i])
         else:
-            print( 'OK' )
+            # print( 'OK' )
             output.update( dict( zip( couple[LABELS], couple[DATA] ) ) )
 
     res = {'output' : output, 'callerInfo' : callerInfo}
@@ -97,14 +98,9 @@ def createJson(*elements):
 
 
 def sendJson(msg):
-    # L'URL della richiesta POST è il seguente:
-    # https://f2tapiv2-staging.azurewebsites.net/api/PLC/send
-    # Nell'header della request è necessario specificare il "Content-Type" come "application/json".
-
     url = WEB_SERVICE
     data = msg
-    headers = {'Content-type': 'application/json'}
-
+    headers = {'Content-Type': 'application/json'}
 
     print("Sending json...")
 
@@ -113,11 +109,14 @@ def sendJson(msg):
         # If the response was successful, no Exception will be raised
         response.raise_for_status()
     except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')  # Python 3.6
+        #print('HTTP error occurred: ', http_err)  # Python 3.6
+        return ('Send json - HTTP error occurred: ', http_err)  # Python 3.6
     except Exception as err:
-        print(f'Other error occurred: {err}')  # Python 3.6
+        #print('Other error occurred:', err)  # Python 3.6
+        return ('Send json - Other error occurred:', err)
     else:
-        print('Success!')
+        #print('Success!')
+        return 'Send json: success' 
 
 
 
@@ -143,6 +142,8 @@ res = readGroupData( opcGroups )
 while( True ):
 	## read a GROUP of variable - opcGrops e' un array di stringhe
     res = readGroupData( opcGroups )
+    now = datetime.datetime.now()
+    timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
 
     if res != None:
         jjj = createJson(
@@ -158,9 +159,12 @@ while( True ):
                     (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
                     )
         print('\n')
-        print(json.dumps(jjj, indent=4, sort_keys=True))
+        #print(json.dumps(jjj, indent=4, sort_keys=True))
 
-        sendJson(jjj)
+        response = sendJson(jjj)
+        
+        print(str(timestamp), str(response) )
 
+        time.sleep(5)
     else:
-        print('cicciia! Nessun risultato, PLC spento')
+        print(str(timestamp), 'PLC spento')
