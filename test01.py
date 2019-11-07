@@ -57,20 +57,20 @@ def readGroupData(varGroup):
 		print "TimeoutError occured: IL PLC E SPENTO!!!"
 
 	return val
-    
-    
-    
-    
+
+
+
+
 def createJson(*elements):
     callerInfo = {
         "culture": "it-IT",
         "timezone": "+01:00",
-        "version": "1.0.0" } 
+        "version": "1.0.0" }
 
     output = {}
 
     for couple in elements:
-            
+
         if not isinstance(couple,tuple):
             print('Problem with data: nON E UNATUPLA')
         elif not len(couple) == 2:
@@ -84,14 +84,14 @@ def createJson(*elements):
             output.update( dict( zip( couple[LABELS], couple[DATA] ) ) )
 
     res = {'output' : output, 'callerInfo' : callerInfo}
-    
+
     return res
 
 
 def sendJson(msg):
     print("Sending json")
     print("DONE")
-    
+
 
 # Chose the groups of vars
 opcGroups = GelliBelloi.VAR_GROUPS_SUPER_COMPACT
@@ -107,34 +107,31 @@ opc.connect( SERVER_NAME )
 
 ## read a GROUP of variable - opcGrops e' un array di stringhe
 res = readGroupData( opcGroups )
-#print(res)
 
 ##per prendere un colonna sola
 #print( [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] )
 
 
+#print(res)
+
 ## stampo le dimensioni dei
-while True:
-    
-    res = readGroupData( opcGroups )
-    
-    if res != None:
-        jjj = createJson( 
-                    (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
-                    (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
-                    (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
-                    (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
-                    (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
-                    (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
-                    (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
-                    (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
-                    (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
-                    (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
-                    )
-        print('Data readed!')
-        #print(json.dumps(jjj, indent=2, sort_keys=True))
+if res != None:
+    jjj = createJson(
+                (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
+                (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
+                (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
+                (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
+                (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
+                (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
+                (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
+                (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
+                (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
+                (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
+                )
+    print('\n\n')
+    print(json.dumps(jjj, indent=4, sort_keys=True))
 
-        sendJson(jjj)
+    sendJson(jjj)
 
-    else:
-        print('cicciia! Nessun risultato, PLC spento')
+else:
+    print('cicciia! Nessun risultato, PLC spento')
