@@ -11,6 +11,8 @@ import datetime
 import re, time, csv
 import OpenOPC
 
+import request
+
 import json
 
 import GelliBelloi
@@ -21,6 +23,11 @@ except ImportError:
 	pyro_found = False
 else:
 	pyro_found = True
+
+
+WEB_SERVICE = 'https://f2tapiv2-staging.azurewebsites.net/api/PLC/send'
+
+MACHINERY_ID = 'gelli-belloi_01'
 
 SERVER_NAME   = 'OPC.SimaticNET'
 OPC_NAME_ROOT = 'S7:[Collegamento_IM151_8]'
@@ -67,7 +74,8 @@ def createJson(*elements):
         "timezone": "+01:00",
         "version": "1.0.0" }
 
-    output = {}
+#    output = {"machineryId": "gelli-belloi_01", "timestamp":"dd/MM/yyyy HH:mm:ss"}
+    output = { "machineryId" : MACHINERY_ID }
 
     for couple in elements:
 
@@ -89,8 +97,28 @@ def createJson(*elements):
 
 
 def sendJson(msg):
-    print("Sending json")
-    print("DONE")
+    # L'URL della richiesta POST è il seguente:
+    # https://f2tapiv2-staging.azurewebsites.net/api/PLC/send
+    # Nell'header della request è necessario specificare il "Content-Type" come "application/json".
+
+    url = WEB_SERVICE
+    data = msg
+    headers = {'Content-type': 'application/json'}
+
+
+    print("Sending json...")
+
+    try:
+        response = requests.post(url, data=json.dumps(data), headers=headers)
+        # If the response was successful, no Exception will be raised
+        response.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')  # Python 3.6
+    except Exception as err:
+        print(f'Other error occurred: {err}')  # Python 3.6
+    else:
+        print('Success!')
+
 
 
 # Chose the groups of vars
@@ -111,27 +139,28 @@ res = readGroupData( opcGroups )
 ##per prendere un colonna sola
 #print( [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] )
 
-
-#print(res)
-
 ## stampo le dimensioni dei
-if res != None:
-    jjj = createJson(
-                (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
-                (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
-                (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
-                (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
-                (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
-                (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
-                (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
-                (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
-                (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
-                (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
-                )
-    print('\n\n')
-    print(json.dumps(jjj, indent=4, sort_keys=True))
+while( True ):
+	## read a GROUP of variable - opcGrops e' un array di stringhe
+    res = readGroupData( opcGroups )
 
-    sendJson(jjj)
+    if res != None:
+        jjj = createJson(
+                    (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
+                    (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
+                    (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
+                    (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
+                    (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
+                    (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
+                    (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
+                    (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
+                    (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
+                    (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
+                    )
+        print('\n')
+        print(json.dumps(jjj, indent=4, sort_keys=True))
 
-else:
-    print('cicciia! Nessun risultato, PLC spento')
+        sendJson(jjj)
+
+    else:
+        print('cicciia! Nessun risultato, PLC spento')
