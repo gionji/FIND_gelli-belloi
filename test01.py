@@ -12,6 +12,8 @@ import re, time, csv
 import OpenOPC
 import time
 
+from losantmqtt import Device
+
 import requests
 
 import json
@@ -27,6 +29,7 @@ else:
 
 
 WEB_SERVICE = 'https://f2tapiv2-staging.azurewebsites.net/api/PLC/send'
+WEB_SERVICE = 'https://servicesv2.fleet2track.com//api/PLC/send'
 
 MACHINERY_ID = 'gelli-belloi_01'
 
@@ -44,6 +47,13 @@ LABEL = INDIRIZZO
 
 LABELS = 1
 DATA = 0
+
+## Losant
+DEVICE_ID  = '5dca7e9585f56300066d2e45'
+APP_KEY    = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
+APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
+
+DELAY = 5.0 # seconds
 
 def readSingleData(variableName):
 	val = None
@@ -78,21 +88,27 @@ def createJson(*elements):
 #    output = {"machineryId": "gelli-belloi_01", "timestamp":"dd/MM/yyyy HH:mm:ss"}
     output = { "machineryId" : MACHINERY_ID }
 
-    for couple in elements:
+    try:
+        for couple in elements:
 
-        if not isinstance(couple,tuple):
-            print('Problem with data: nON E UNATUPLA')
-        elif not len(couple) == 2:
-            print('Problem with data: non ci sono due elementi nella tupla: ', len(couple))
-        elif not len(couple[LABELS]) == len(couple[DATA]):
-            print('Problem with data: le liste non sono lunghe uguali: ', len(couple[DATA]), len(couple[LABELS]))
-            for i in range(0, max(len(couple[DATA]), len(couple[LABELS])) - 1):
-                print(i, couple[DATA][i], couple[LABELS][i])
-        else:
-            # print( 'OK' )
-            output.update( dict( zip( couple[LABELS], couple[DATA] ) ) )
+            if not isinstance(couple,tuple):
+                print('Problem with data: nON E UNATUPLA')
+            elif not len(couple) == 2:
+                print('Problem with data: non ci sono due elementi nella tupla: ', len(couple))
+            elif not len(couple[LABELS]) == len(couple[DATA]):
+                print('Problem with data: le liste non sono lunghe uguali: ', len(couple[DATA]), len(couple[LABELS]))
+                for i in range(0, max(len(couple[DATA]), len(couple[LABELS])) - 1):
+                    print(i, couple[DATA][i], couple[LABELS][i])
+            else:
+                # print( 'OK' )
+                output.update( dict( zip( couple[LABELS], couple[DATA] ) ) )
+    except Exception as e:
+        print( str(e) )
+        return None
+        
+ #   res = {'output' : output, 'callerInfo' : callerInfo}
 
-    res = {'output' : output, 'callerInfo' : callerInfo}
+    res = output
 
     return res
 
@@ -120,6 +136,11 @@ def sendJson(msg):
 
 
 
+def sendToLosant( jsonData):
+    print("Sending Device State")
+    device.send_state( jsonData )
+
+
 # Chose the groups of vars
 opcGroups = GelliBelloi.VAR_GROUPS_SUPER_COMPACT
 
@@ -138,12 +159,28 @@ res = readGroupData( opcGroups )
 ##per prendere un colonna sola
 #print( [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] )
 
+## connect to losant
+# Construct Losant device
+try:
+    print('Connectiong to Losant...')
+    device = Device(DEVICE_ID, APP_KEY, APP_SECRET)
+    print('done')
+except:
+    print('Error connecting losant')
+
+
 ## stampo le dimensioni dei
 while( True ):
 	## read a GROUP of variable - opcGrops e' un array di stringhe
+    res = None
+    print('Reading data from opc...')
     res = readGroupData( opcGroups )
+    print('done')
+    
     now = datetime.datetime.now()
     timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
+
+    print('Opc call result:',res)
 
     if res != None:
         jjj = createJson(
@@ -161,10 +198,14 @@ while( True ):
         print('\n')
         #print(json.dumps(jjj, indent=4, sort_keys=True))
 
-        response = sendJson(jjj)
+        #response = sendJson(jjj)
+        
+        response = sendToLosant(jjj)
         
         print(str(timestamp), str(response) )
 
-        time.sleep(5)
     else:
         print(str(timestamp), 'PLC spento')
+        time.sleep( DELAY )
+
+    time.sleep( DELAY )
