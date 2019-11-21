@@ -179,11 +179,13 @@ while( True ):
     res = readGroupData( opcGroups )
     print('done')
     
+    ## print content from opc
+    #print('Opc call result:',res)
+  
+    ## get time
     now = datetime.datetime.now()
     timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
-
-    print('Opc call result:',res)
-
+    
     if res != None:
         jjj = createJson(
                     (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
@@ -203,15 +205,17 @@ while( True ):
         #print(json.dumps(jjj, indent=4, sort_keys=True))
 
         ## send data to startIt
-        #response = sendJson(jjj)
+        responseFromStartit = sendJson(jjj)
         
         ## send data to losant
-        response = sendToLosant(jjj)
+        responseFromLoasant = sendToLosant(jjj)
+        sendToLosant( {"power" : True} )
         
-        print(str(timestamp) + ": Losant response = " + str(response) )
-
+        print(str(timestamp) + ": Startit response = " + str(responseFromStartit) )
+        print(str(timestamp) + ": Losant           = " + str(responseFromLosant) )
     else:
         print(str(timestamp), 'PLC spento')
+        sendToLosant( {"power" : False} )
         time.sleep( DELAY )
 
     time.sleep( DELAY )
