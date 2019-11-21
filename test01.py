@@ -55,6 +55,8 @@ APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
 
 DELAY = 5.0 # seconds
 
+losantDevice = None
+
 def readSingleData(variableName):
 	val = None
 
@@ -138,7 +140,7 @@ def sendJson(msg):
 
 def sendToLosant( jsonData):
     print("Sending Device State")
-    device.send_state( jsonData )
+    losantDevice.send_state( jsonData )
 
 
 # Chose the groups of vars
@@ -154,19 +156,19 @@ available_servers = opc.servers()
 opc.connect( SERVER_NAME )
 
 ## read a GROUP of variable - opcGrops e' un array di stringhe
-res = readGroupData( opcGroups )
+#res = readGroupData( opcGroups )
 
-##per prendere un colonna sola
-#print( [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] )
 
 ## connect to losant
 # Construct Losant device
 try:
     print('Connectiong to Losant...')
-    device = Device(DEVICE_ID, APP_KEY, APP_SECRET)
+    losantDevice = Device(DEVICE_ID, APP_KEY, APP_SECRET)
+    losantDevice.connect(blocking=False)
     print('done')
 except:
     print('Error connecting losant')
+
 
 
 ## stampo le dimensioni dei
@@ -196,13 +198,17 @@ while( True ):
                     (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
                     )
         print('\n')
+        
+        ## Print created json with nice indentation
         #print(json.dumps(jjj, indent=4, sort_keys=True))
 
+        ## send data to startIt
         #response = sendJson(jjj)
         
+        ## send data to losant
         response = sendToLosant(jjj)
         
-        print(str(timestamp), str(response) )
+        print(str(timestamp) + ": Losant response = " + str(response) )
 
     else:
         print(str(timestamp), 'PLC spento')
