@@ -121,19 +121,15 @@ def createJson(*elements):
         print( str(e) )
         return None
         
- #   res = {'output' : output, 'callerInfo' : callerInfo}
+    startitJson = {'output' : output, 'callerInfo' : callerInfo}
 
-    res = output
-
-    return res
+    return startitJson, output
 
 
 def sendJson(msg):
     url = WEB_SERVICE
     data = msg
     headers = {'Content-Type': 'application/json'}
-
-    print("Sending json...")
 
     try:
         response = requests.post(url, data=json.dumps(data), headers=headers)
@@ -203,7 +199,7 @@ while( True ):
     timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
     
     if res != None:
-        plcData = createJson(
+        dataStartit, dataLosant = createJson(
                     (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
                     (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
                     (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
@@ -221,16 +217,17 @@ while( True ):
         #print(json.dumps(jjj, indent=4, sort_keys=True))
 
         ## send data to startIt
-        # responseFromStartit = sendJson( plcData )
-        # TODO: devo rifare il metodo per la formattazione per statrtit. ho bloccato
-        # modificato il metopdo createJson per losant e inviare solo il blocco output
+        print('Sending data to Startit...')
+        responseFromStartit = sendJson( dataStartit )
+        print('Done')
         
         ## send data to losant
-        responseFromLoasant = losantDevice.send_state(plcData)
+        print('Sending data to Losant...')
+        responseFromLoasant = losantDevice.send_state( dataLosant )
+        # invio un boolean per tracciare se acceso o spento
         deviceGenerale.send_state( {"power_on" : True} )
+        print('done')
         
-        #print(str(timestamp) + ": Startit response = " + str(responseFromStartit) )
-        #print(str(timestamp) + ": Losant           = " + str(responseFromLosant) )
     else:
         print(str(timestamp), 'PLC spento')
         deviceGenerale.send_state( {"power_on" : False} )
