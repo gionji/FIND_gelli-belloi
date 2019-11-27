@@ -51,11 +51,12 @@ DATA = 0
 ## Losant
 DEVICE_ID  = '5dca7e9585f56300066d2e45'
 DEVICE_ID_GENERALE = '5dd6a3e00ac5cc0007fbfce8'
+
 DEVICE_ID_GRUPPO_1 = ''
 DEVICE_ID_GRUPPO_2 = ''
 DEVICE_ID_GRUPPO_3 = ''
 
-APP_KEY    = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
+APP_KEY = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
 APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
 
 APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
@@ -199,34 +200,36 @@ while( True ):
     timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
     
     if res != None:
-        dataStartit, dataLosant = createJson(
-                    (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
-                    (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
-                    (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
-                    (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
-                    (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
-                    (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
-                    (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
-                    (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
-                    (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
-                    (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
-                    )
-        print('\n')
-        
-        ## Print created json with nice indentation
-        #print(json.dumps(jjj, indent=4, sort_keys=True))
+        try:
+            dataStartit, dataLosant = createJson(
+                        (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
+                        (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
+                        (res[2][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Ingressi] ),
+                        (res[3][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Allarmi] ),
+                        (res[4][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Fasi] ),
+                        (res[5][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Ingressi] ),
+                        (res[6][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo2.Allarmi] ),
+                        (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
+                        (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
+                        (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
+                        ) 
+            ## Print created json with nice indentation
+            #print(json.dumps(jjj, indent=4, sort_keys=True))
 
-        ## send data to startIt
-        print('Sending data to Startit...')
-        responseFromStartit = sendJson( dataStartit )
-        print('Done')
-        
-        ## send data to losant
-        print('Sending data to Losant...')
-        responseFromLoasant = losantDevice.send_state( dataLosant )
-        # invio un boolean per tracciare se acceso o spento
-        deviceGenerale.send_state( {"power_on" : True} )
-        print('done')
+            ## send data to startIt
+            print('Sending data to Startit...')
+            responseFromStartit = sendJson( dataStartit )
+            print('Done')
+            
+            ## send data to losant
+            print('Sending data to Losant...')
+            responseFromLoasant = losantDevice.send_state( dataLosant )
+            # invio un boolean per tracciare se acceso o spento
+            deviceGenerale.send_state( {"power_on" : True} )
+            print('done')
+            
+        except Exception as e:
+            print(str(timestamp), str(e))
         
     else:
         print(str(timestamp), 'PLC spento')
