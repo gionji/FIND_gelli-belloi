@@ -49,23 +49,22 @@ LABELS = 1
 DATA = 0
 
 ## Losant
-DEVICE_ID  = '5dca7e9585f56300066d2e45'
+DEVICE_ID          = '5dca7e9585f56300066d2e45'
 DEVICE_ID_GENERALE = '5dd6a3e00ac5cc0007fbfce8'
 
-DEVICE_ID_GRUPPO_1 = ''
-DEVICE_ID_GRUPPO_2 = ''
-DEVICE_ID_GRUPPO_3 = ''
+DEVICE_ID_GRUPPO_1 = '5dd7d0c2f0be720006b36741'
+DEVICE_ID_GRUPPO_2 = '5dd7d122829bcb00065815e2'
+DEVICE_ID_GRUPPO_3 = '5dd7d1509285680007ea9529'
 
-APP_KEY = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
+# APP_KEY = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
 APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
 
-APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
+# APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
 APP_SECRET = 'b61138551a661bcfb851480cb9a70c319dcc8e4db073d8cb389523e314ddca91'
 
-DELAY = 5.0 # seconds
+DELAY = 1.0 # seconds
 
 losantDevice = None
-
 deviceGenerale = None
 deviceGruppo1 = None
 deviceGruppo2 = None
@@ -173,8 +172,11 @@ opc.connect( SERVER_NAME )
 # Construct Losant device
 try:
     print('Connectiong to Losant...')
-    losantDevice = Device(DEVICE_ID, APP_KEY, APP_SECRET)
+    losantDevice   = Device(DEVICE_ID,          APP_KEY, APP_SECRET)
     deviceGenerale = Device(DEVICE_ID_GENERALE, APP_KEY, APP_SECRET)
+    deviceGruppo1  = Device(DEVICE_ID_GRUPPO_1, APP_KEY, APP_SECRET)
+    deviceGruppo2  = Device(DEVICE_ID_GRUPPO_2, APP_KEY, APP_SECRET)
+    deviceGruppo3  = Device(DEVICE_ID_GRUPPO_3, APP_KEY, APP_SECRET)
     
     losantDevice.connect(blocking=False)
     deviceGenerale.connect(blocking=False)
@@ -232,8 +234,10 @@ while( True ):
             print(str(timestamp), str(e))
         
     else:
+        # in caso di PLC SPENTO
         print(str(timestamp), 'PLC spento')
         deviceGenerale.send_state( {"power_on" : False} )
+        ## ritardo in caso di PLC spento
         time.sleep( DELAY )
 
     time.sleep( DELAY )
