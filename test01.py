@@ -12,13 +12,14 @@ import re, time, csv
 import OpenOPC
 import time
 
+import threading
+
 from losantmqtt import Device
 
 import requests
-
 import json
-
 import GelliBelloi
+
 
 try:
 	import Pyro
@@ -48,13 +49,15 @@ LABEL = INDIRIZZO
 LABELS = 1
 DATA = 0
 
+DELAY = 1.0 # seconds
+
 ## Losant
 DEVICE_ID          = '5dca7e9585f56300066d2e45'
 DEVICE_ID_GENERALE = '5dd6a3e00ac5cc0007fbfce8'
 
 DEVICE_ID_GRUPPO_1 = '5dd7d0c2f0be720006b36741'
 DEVICE_ID_GRUPPO_2 = '5dd7d122829bcb00065815e2'
-DEVICE_ID_GRUPPO_3 = '5dd7d1509285680007ea9529'
+DEVICE_ID_GRUPPO_3 = '5df25430aefa7f0008c2c9c6'
 
 # APP_KEY = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
 APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
@@ -62,13 +65,108 @@ APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
 # APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
 APP_SECRET = 'b61138551a661bcfb851480cb9a70c319dcc8e4db073d8cb389523e314ddca91'
 
-DELAY = 1.0 # seconds
 
-losantDevice = None
+
+losantDevice   = None
 deviceGenerale = None
-deviceGruppo1 = None
-deviceGruppo2 = None
-deviceGruppo3 = None
+deviceGruppo1  = None
+deviceGruppo2  = None
+deviceGruppo3  = None
+
+REGISTRO_DI_RESET_GENERALE = 'db200_dbx234_0'
+REGISTRO_DI_RESET_GRUPPO_1 = 'db200_dbx234_1'
+REGISTRO_DI_RESET_GRUPPO_2 = 'db200_dbx234_2'
+REGISTRO_DI_RESET_GRUPPO_3 = 'db200_dbx234_3'
+
+
+class Losant:
+
+    ## Losant
+    DEVICE_ID_GENERALE = '5dd6a3e00ac5cc0007fbfce8'
+    DEVICE_ID_GRUPPO_1 = '5dd7d0c2f0be720006b36741'
+    DEVICE_ID_GRUPPO_2 = '5dd7d122829bcb00065815e2'
+    DEVICE_ID_GRUPPO_3 = '5df25430aefa7f0008c2c9c6'
+
+    APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
+    APP_SECRET = 'b61138551a661bcfb851480cb9a70c319dcc8e4db073d8cb389523e314ddca91'
+    
+    deviceGenerale = None
+    deviceGruppo1  = None
+    deviceGruppo2  = None
+    deviceGruppo3  = None
+
+    REGISTRO_DI_RESET_GENERALE = 'db200_dbx234_0'
+    REGISTRO_DI_RESET_GRUPPO_1 = 'db200_dbx234_1'
+    REGISTRO_DI_RESET_GRUPPO_2 = 'db200_dbx234_2'
+    REGISTRO_DI_RESET_GRUPPO_3 = 'db200_dbx234_3'
+
+    global_var_1 = 1
+    global_var_2 = 2
+
+    def __init__(self):
+        self.global_var_1 = ''
+        self.global_var_2 = ''
+        
+        try:
+            print('Connectiong to Losant...')
+            self.deviceGenerale = Device(DEVICE_ID_GENERALE, APP_KEY, APP_SECRET)
+            self.deviceGruppo1  = Device(DEVICE_ID_GRUPPO_1, APP_KEY, APP_SECRET)
+            self.deviceGruppo2  = Device(DEVICE_ID_GRUPPO_2, APP_KEY, APP_SECRET)
+            self.deviceGruppo3  = Device(DEVICE_ID_GRUPPO_3, APP_KEY, APP_SECRET)
+            
+            self.deviceGenerale.connect(blocking=False)
+            self.deviceGruppo1.connect(blocking=False)
+            self.deviceGruppo2.connect(blocking=False)
+            self.deviceGruppo3.connect(blocking=False)
+            print('done')
+        except:
+            print('Error connecting losant')
+            
+    def on_command(device, command):
+    print(command["name"] + " command received.")
+
+    # Listen for the gpioControl. This name configured in Losant
+    if command["name"] == "reset_all":
+        resetAll()
+    elif command["name"] == "reset_gruppo_1":
+        resetGruppo(1)
+    elif command["name"] == "reset_gruppo_2":
+        resetGruppo(2)
+    elif command["name"] == "reset_gruppo_3":
+        resetGruppo(3)
+
+    def resetAll(self):
+        self.global_var_1 = 'foo'
+
+    def resetGruppo(self, numeroGruppo):
+        if numeroGruppo == 1: reg = REGISTRO_DI_RESET_GRUPPO_1
+        if numeroGruppo == 2: reg = REGISTRO_DI_RESET_GRUPPO_2
+        if numeroGruppo == 3: reg = REGISTRO_DI_RESET_GRUPPO_3
+
+        val = None
+
+        try:
+            val = opc.write( (reg, 1) )
+            time.sleep(1.0)
+        except OpenOPC.TimeoutError:
+            print "TimeoutError occured."
+
+        return val
+            
+
+    def run(self):
+        t1 = threading.Thread( target=self.method_name_1 )
+        t2 = threading.Thread( target=self.method_name_2 )
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+        print( self.global_var_1, self.global_var_2 )
+
+
+# d = DomainOperations()
+#     d.run()
+
 
 def readSingleData(variableName):
 	val = None
@@ -91,6 +189,16 @@ def readGroupData(varGroup):
 
 	return val
 
+
+def resetAlarms():
+    val = None
+
+    try:
+        val = opc.write( (REGISTRO_DI_RESET, 1) )
+    except OpenOPC.TimeoutError:
+        print "TimeoutError occured: IL PLC E SPENTO!!!"
+
+    return val
 
 
 
@@ -180,6 +288,9 @@ try:
     
     losantDevice.connect(blocking=False)
     deviceGenerale.connect(blocking=False)
+    deviceGruppo1.connect(blocking=False)
+    deviceGruppo2.connect(blocking=False)
+    deviceGruppo3.connect(blocking=False)
     print('done')
 except:
     print('Error connecting losant')
@@ -221,13 +332,16 @@ while( True ):
             ## send data to startIt
             print('Sending data to Startit...')
             responseFromStartit = sendJson( dataStartit )
-            print('Done')
+            print(responseFromStartit)
             
             ## send data to losant
             print('Sending data to Losant...')
             responseFromLoasant = losantDevice.send_state( dataLosant )
             # invio un boolean per tracciare se acceso o spento
             deviceGenerale.send_state( {"power_on" : True} )
+            deviceGruppo1.send_state( dataLosant )
+            deviceGruppo2.send_state( dataLosant )
+            deviceGruppo3.send_state( dataLosant )
             print('done')
             
         except Exception as e:
