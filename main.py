@@ -59,7 +59,7 @@ def main():
         now       = datetime.datetime.now()
         timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
 
-
+        print('\n\n' + str(timestamp))
 
         ## Ask for the data to opc servers
         startItDataJson, losantDataJson = opcServer.getOpcDataInJsonFormats()
