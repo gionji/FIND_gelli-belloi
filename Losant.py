@@ -70,7 +70,7 @@ class Losant:
 
     def notifyPlcIsOff(self):
         try:
-            deviceGenerale.send_state( {"power_on" : False} )
+            self.deviceGenerale.send_state( {"power_on" : False} )
         except:
             print("Problem occurred notifing off state to losant")
 
