@@ -18,7 +18,6 @@ from losantmqtt import Device
 
 import requests
 import json
-
 import GelliBelloi
 
 
@@ -30,25 +29,25 @@ else:
 	pyro_found = True
 
 
-WEB_SERVICE   = 'https://f2tapiv2-staging.azurewebsites.net/api/PLC/send'
-WEB_SERVICE   = 'https://servicesv2.fleet2track.com//api/PLC/send'
+WEB_SERVICE = 'https://f2tapiv2-staging.azurewebsites.net/api/PLC/send'
+WEB_SERVICE = 'https://servicesv2.fleet2track.com//api/PLC/send'
 
-MACHINERY_ID  = 'gelli-belloi_01'
+MACHINERY_ID = 'gelli-belloi_01'
 
 SERVER_NAME   = 'OPC.SimaticNET'
 OPC_NAME_ROOT = 'S7:[Collegamento_IM151_8]'
 
 
-NOME      = 0
+NOME = 0
 INDIRIZZO = 1
-TIPO      = 2
-NOTE      = 3
-LABEL     = 4
+TIPO = 2
+NOTE = 3
+LABEL = 4
 
-LABEL  = INDIRIZZO
+LABEL = INDIRIZZO
 
 LABELS = 1
-DATA   = 0
+DATA = 0
 
 DELAY = 1.0 # seconds
 
@@ -79,12 +78,14 @@ REGISTRO_DI_RESET_GRUPPO_2 = 'db200_dbx234_2'
 REGISTRO_DI_RESET_GRUPPO_3 = 'db200_dbx234_3'
 
 
+ALARM_RESET_TH = 5
+
 
 def readSingleData(variableName):
 	val = None
 
 	try:
-		value, quality, time = opc.read( OPC_NAME_ROOT + str(variableName) )
+		value, quality, time = opc.read( OPC_NAME_ROOT + 'variableName' )
 	except OpenOPC.TimeoutError:
 		print "TimeoutError occured: IL PLC E SPENTO!!!"
 
@@ -172,11 +173,10 @@ def createJson(*elements):
     except Exception as e:
         print( str(e) )
         return None
-
+        
     startitJson = {'output' : output, 'callerInfo' : callerInfo}
-	losantJson = output
 
-    return startitJson, losantJson
+    return startitJson, output
 
 
 def sendJson(msg):
@@ -196,7 +196,7 @@ def sendJson(msg):
         return ('Send json - Other error occurred:', err)
     else:
         #print('Success!')
-        return 'Send json: success'
+        return 'Send json: success' 
 
 
 
@@ -230,20 +230,21 @@ try:
     deviceGruppo1  = Device(DEVICE_ID_GRUPPO_1, APP_KEY, APP_SECRET)
     deviceGruppo2  = Device(DEVICE_ID_GRUPPO_2, APP_KEY, APP_SECRET)
     deviceGruppo3  = Device(DEVICE_ID_GRUPPO_3, APP_KEY, APP_SECRET)
-
+    
     losantDevice.connect(blocking=False)
     deviceGenerale.connect(blocking=False)
     deviceGruppo1.connect(blocking=False)
     deviceGruppo2.connect(blocking=False)
     deviceGruppo3.connect(blocking=False)
-
+    
     # Listen for commands.
     deviceGenerale.add_event_observer("command", on_command)
     print('done')
 except:
     print('Error connecting losant')
 
-
+ALARM_RESET_TH = 10
+resetAlarmsCounter = 0
 
 ## stampo le dimensioni dei
 while( True ):
@@ -252,14 +253,16 @@ while( True ):
     print('Reading data from opc...')
     res = readGroupData( opcGroups )
     print('done')
-
+    
     ## print content from opc
     #print('Opc call result:',res)
-
+  
+    resetAlarmsCounter = resetAlarmsCounter + 1
+  
     ## get time
     now = datetime.datetime.now()
     timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
-
+    
     if res != None:
         try:
             dataStartit, dataLosant = createJson(
@@ -273,7 +276,7 @@ while( True ):
                         (res[7][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Fasi] ),
                         (res[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
                         (res[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
-                        )
+                        ) 
             ## Print created json with nice indentation
             #print(json.dumps(jjj, indent=4, sort_keys=True))
 
@@ -281,26 +284,32 @@ while( True ):
             print('Sending data to Startit...')
             responseFromStartit = sendJson( dataStartit )
             print(responseFromStartit)
-
+            
             ## send data to losant
             print('Sending data to Losant...')
             responseFromLoasant = losantDevice.send_state( dataLosant )
-
+            
             # invio un boolean per tracciare se acceso o spento
             deviceGenerale.send_state( {"power_on" : True} )
             deviceGruppo1.send_state( dataLosant )
             deviceGruppo2.send_state( dataLosant )
             deviceGruppo3.send_state( dataLosant )
             print('done')
-
+            
         except Exception as e:
             print(str(timestamp), str(e))
-
+        
     else:
         # in caso di PLC SPENTO
         print(str(timestamp), 'PLC spento')
         deviceGenerale.send_state( {"power_on" : False} )
         ## ritardo in caso di PLC spento
         time.sleep( DELAY )
+        
+    if resetAlarmsCounter == ALARM_RESET_TH:
+        resetAll()
+        resetAlarmsCounter = 0
+        print("Reset all alarms.")        
 
     time.sleep( DELAY )
+    print("")
