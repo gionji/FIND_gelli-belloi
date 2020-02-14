@@ -53,10 +53,15 @@ def main():
     ## connect to Staartit ( anche se non serve)
     startIt = StartIt()
 
+    alarmsResetCounter = 0
+    ALARMS_RESET_TH = 5
+
     while( isRunning ):
         ## get time
         now       = datetime.datetime.now()
         timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
+
+
 
         ## Ask for the data to opc servers
         startItDataJson, losantDataJson = opcServer.getOpcDataInJsonFormats()
@@ -66,6 +71,11 @@ def main():
             startIt.sendData( startItDataJson )
         else:
             losant.notifyPlcIsOff()
+            time.sleep(5)
+
+        if alarmsResetCounter > ALARMS_RESET_TH:
+            alarmsResetCounter = 0
+            opcServer.resetAlarms()
 
         time.sleep( DELAY )
 
