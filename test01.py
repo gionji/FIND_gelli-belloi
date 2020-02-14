@@ -78,6 +78,8 @@ REGISTRO_DI_RESET_GRUPPO_2 = 'db200_dbx234_2'
 REGISTRO_DI_RESET_GRUPPO_3 = 'db200_dbx234_3'
 
 
+ALARM_RESET_TH = 5
+
 
 def readSingleData(variableName):
 	val = None
@@ -241,7 +243,8 @@ try:
 except:
     print('Error connecting losant')
 
-
+ALARM_RESET_TH = 10
+resetAlarmsCounter = 0
 
 ## stampo le dimensioni dei
 while( True ):
@@ -253,6 +256,8 @@ while( True ):
     
     ## print content from opc
     #print('Opc call result:',res)
+  
+    resetAlarmsCounter = resetAlarmsCounter + 1
   
     ## get time
     now = datetime.datetime.now()
@@ -300,5 +305,11 @@ while( True ):
         deviceGenerale.send_state( {"power_on" : False} )
         ## ritardo in caso di PLC spento
         time.sleep( DELAY )
+        
+    if resetAlarmsCounter == ALARM_RESET_TH:
+        resetAll()
+        resetAlarmsCounter = 0
+        print("Reset all alarms.")        
 
     time.sleep( DELAY )
+    print("")
