@@ -15,21 +15,19 @@ import json
 
 import GelliBelloi
 import StartIt
+import OpcServer
+import Losant
 
 ## Constants
 DELAY = 0.1
 
-
 ## vars
-
 isRunning = True
 isPaused  = False
 
 ## losant methods
 
-
 ## startit methods
-
 
 
 def handler_stop_signals(signum, frame):
@@ -44,14 +42,14 @@ def main():
     signal.signal(signal.SIGTERM, handler_stop_signals)
 
     ## Connect to the opc server
-    opcServer = OpcServer()
+    opcServer = OpcServer.OpcServer()
     opcServer.connect()
 
     ## Sonnect to losant
-    losant = Losant()
+    losant = Losant.Losant()
     losant.connect()
     ## connect to Staartit ( anche se non serve)
-    startIt = StartIt()
+    startIt = StartIt.StartIt()
 
     while( isRunning ):
         ## get time
