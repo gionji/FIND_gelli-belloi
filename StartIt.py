@@ -1,4 +1,5 @@
 import requests
+from urllib2 import HTTPError
 
 WEB_SERVICE   = 'https://servicesv2.fleet2track.com//api/PLC/send'
 MACHINERY_ID  = 'gelli-belloi_01'

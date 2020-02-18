@@ -66,7 +66,7 @@ def main():
 
         if losantDataJson != None and startItDataJson != None:
             losant.sendData( losantDataJson )
-            startIt.sendData( startItDataJson )
+            startIt.sendJson( startItDataJson )
         else:
             losant.notifyPlcIsOff()
             time.sleep(5)

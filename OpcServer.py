@@ -8,6 +8,9 @@ REGISTRO_DI_RESET_GENERALE = 'S7:[Collegamento_IM151_8]ResetAllarmi'
 MACHINERY_ID  = 'gelli-belloi_01'
 
 
+LABELS = 1
+DATA   = 0
+
 class OpcServer:
     def __init__(self):
         self.opc = OpenOPC.client()
@@ -46,10 +49,12 @@ class OpcServer:
     #    output = {"machineryId": "gelli-belloi_01", "timestamp":"dd/MM/yyyy HH:mm:ss"}
         output = { "machineryId" : MACHINERY_ID }
 
+        print(elements)
+
         try:
             for couple in elements:
-
                 if not isinstance(couple,tuple):
+                    print(couple,tuple)
                     print('Problem with data: nON E UNATUPLA')
                 elif not len(couple) == 2:
                     print('Problem with data: non ci sono due elementi nella tupla: ', len(couple))
@@ -94,8 +99,8 @@ class OpcServer:
                     (rawDataFromOpcServer[8][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Ingressi] ),
                     (rawDataFromOpcServer[9][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo3.Allarmi] )
                     )
-        except:
-            print("Exception occurred returning data")
+        except Exception as e:
+            print("Exception occurred returning data: " + str(e))
             return None, None
 
         return dataStartit, dataLosant
