@@ -49,7 +49,6 @@ class OpcServer:
     #    output = {"machineryId": "gelli-belloi_01", "timestamp":"dd/MM/yyyy HH:mm:ss"}
         output = { "machineryId" : MACHINERY_ID }
 
-        print(elements)
 
         try:
             for couple in elements:
@@ -87,6 +86,9 @@ class OpcServer:
             return None, None
 
         try:
+        
+            print( rawDataFromOpcServer[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] )
+        
             dataStartit, dataLosant = self.__createJson(
                     (rawDataFromOpcServer[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
                     (rawDataFromOpcServer[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
@@ -108,7 +110,9 @@ class OpcServer:
 
     def resetAlarms():
         val = None
-
+        
+        print(">>>>>>>>>>>>>>>>>>> RESET ALARMI <<<<<<<<<<<<<<<<<")
+        
         try:
             val = self.opc.write( (REGISTRO_DI_RESET_GENERALE, 0x1) )
         except OpenOPC.TimeoutError:

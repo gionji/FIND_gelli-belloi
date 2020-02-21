@@ -52,15 +52,23 @@ DATA = 0
 DELAY = 1.0 # seconds
 
 ## Losant
-DEVICE_ID          = '5dca7e9585f56300066d2e45'
-DEVICE_ID_GENERALE = '5dd6a3e00ac5cc0007fbfce8'
+#DEVICE_ID          = '5dca7e9585f56300066d2e45'
+#DEVICE_ID_GENERALE = '5dd6a3e00ac5cc0007fbfce8'
+#DEVICE_ID_GRUPPO_1 = '5dd7d0c2f0be720006b36741'
+#DEVICE_ID_GRUPPO_2 = '5dd7d122829bcb00065815e2'
+#DEVICE_ID_GRUPPO_3 = '5df25430aefa7f0008c2c9c6'
 
-DEVICE_ID_GRUPPO_1 = '5dd7d0c2f0be720006b36741'
-DEVICE_ID_GRUPPO_2 = '5dd7d122829bcb00065815e2'
-DEVICE_ID_GRUPPO_3 = '5df25430aefa7f0008c2c9c6'
+DEVICE_ID          = '5dca7e9585f56300066d2e45'
+DEVICE_ID_GENERALE = '5e4f9b28dbced20006e81784'
+
+DEVICE_ID_GRUPPO_1 = '5e4f9bc0dbced20006e81785'
+DEVICE_ID_GRUPPO_2 = '5e4f9c31a7164d0006a799ce'
+DEVICE_ID_GRUPPO_3 = '5e4fa0eea7164d0006a799d4'
+
 
 # APP_KEY = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
-APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
+#APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
+APP_KEY = '3cc85fad-b05f-4ec0-aae8-eac321e4f08e'
 
 # APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
 APP_SECRET = 'b61138551a661bcfb851480cb9a70c319dcc8e4db073d8cb389523e314ddca91'
@@ -264,7 +272,7 @@ while( True ):
     timestamp = now.strftime("%d/%m/%Y %H:%M:%S")
     
     if res != None:
-        try:
+        try:        
             dataStartit, dataLosant = createJson(
                         (res[0][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Generale] ),
                         (res[1][1], [elem[ LABELS ] for elem in GelliBelloi.Labels.Gruppo1.Fasi] ),
