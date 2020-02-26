@@ -58,7 +58,8 @@ DELAY = 1.0 # seconds
 #DEVICE_ID_GRUPPO_2 = '5dd7d122829bcb00065815e2'
 #DEVICE_ID_GRUPPO_3 = '5df25430aefa7f0008c2c9c6'
 
-DEVICE_ID          = '5dca7e9585f56300066d2e45'
+## acount apposta per gelli
+#DEVICE_ID          = '5dca7e9585f56300066d2e45'
 DEVICE_ID_GENERALE = '5e4f9b28dbced20006e81784'
 
 DEVICE_ID_GRUPPO_1 = '5e4f9bc0dbced20006e81785'
@@ -68,11 +69,13 @@ DEVICE_ID_GRUPPO_3 = '5e4fa0eea7164d0006a799d4'
 
 # APP_KEY = '5a406d76-2b01-4074-a5d2-5d7bb70a8544'
 #APP_KEY = 'e3262969-d61e-4a33-8c21-0a2b91408902'
-APP_KEY = '3cc85fad-b05f-4ec0-aae8-eac321e4f08e'
+#APP_KEY = 'c42bceb6-3dd8-415e-baa4-a7765b347a89'
+APP_KEY = '23344133-f481-4c9e-970a-b6b9d6e77b95'
 
 # APP_SECRET = '20831052b9ab7e395bac4d2b54c2f4ba053ab5f80a2850ea97ca732285e8b9df'
-APP_SECRET = 'b61138551a661bcfb851480cb9a70c319dcc8e4db073d8cb389523e314ddca91'
-
+# APP_SECRET = 'b61138551a661bcfb851480cb9a70c319dcc8e4db073d8cb389523e314ddca91'
+#APP_SECRET = 'f0e1bb26b1c7373c158a782c27f7fca7c272f5b5c31171aaf7f162c8b9b8ae9f'
+APP_SECRET = 'db369c84f4814b3537a7cb8f3227725ca5c8dfeaa193337830ae931d936e1716'
 
 losantDevice   = None
 deviceGenerale = None
@@ -233,20 +236,20 @@ opc.connect( SERVER_NAME )
 # Construct Losant device
 try:
     print('Connectiong to Losant...')
-    losantDevice   = Device(DEVICE_ID,          APP_KEY, APP_SECRET)
+    #losantDevice   = Device(DEVICE_ID,          APP_KEY, APP_SECRET)
     deviceGenerale = Device(DEVICE_ID_GENERALE, APP_KEY, APP_SECRET)
     deviceGruppo1  = Device(DEVICE_ID_GRUPPO_1, APP_KEY, APP_SECRET)
     deviceGruppo2  = Device(DEVICE_ID_GRUPPO_2, APP_KEY, APP_SECRET)
     deviceGruppo3  = Device(DEVICE_ID_GRUPPO_3, APP_KEY, APP_SECRET)
     
-    losantDevice.connect(blocking=False)
+    #losantDevice.connect(blocking=False)
     deviceGenerale.connect(blocking=False)
     deviceGruppo1.connect(blocking=False)
     deviceGruppo2.connect(blocking=False)
     deviceGruppo3.connect(blocking=False)
     
     # Listen for commands.
-    deviceGenerale.add_event_observer("command", on_command)
+    #deviceGenerale.add_event_observer("command", on_command)
     print('done')
 except:
     print('Error connecting losant')
@@ -258,6 +261,7 @@ resetAlarmsCounter = 0
 while( True ):
 	## read a GROUP of variable - opcGrops e' un array di stringhe
     res = None
+    
     print('Reading data from opc...')
     res = readGroupData( opcGroups )
     print('done')
@@ -295,13 +299,28 @@ while( True ):
             
             ## send data to losant
             print('Sending data to Losant...')
-            responseFromLoasant = losantDevice.send_state( dataLosant )
             
             # invio un boolean per tracciare se acceso o spento
-            deviceGenerale.send_state( {"power_on" : True} )
-            deviceGruppo1.send_state( dataLosant )
-            deviceGruppo2.send_state( dataLosant )
-            deviceGruppo3.send_state( dataLosant )
+            try:
+                deviceGenerale.send_state( {"power_on" : True} )
+            except Exception as e:
+                print(e)
+                 
+            try:
+                deviceGruppo1.send_state( dataLosant )
+            except Exception as e:
+                print(e)
+            
+            try:
+                deviceGruppo2.send_state( dataLosant )
+            except Exception as e:
+                print(e)
+            
+            try:
+                deviceGruppo3.send_state( dataLosant )
+            except Exception as e:
+                print(e)
+            
             print('done')
             
         except Exception as e:
@@ -310,14 +329,20 @@ while( True ):
     else:
         # in caso di PLC SPENTO
         print(str(timestamp), 'PLC spento')
-        deviceGenerale.send_state( {"power_on" : False} )
+        try:
+            deviceGenerale.send_state( {"power_on" : False} )
+        except Exception as e:
+            print(e)
         ## ritardo in caso di PLC spento
         time.sleep( DELAY )
         
-    if resetAlarmsCounter == ALARM_RESET_TH:
-        resetAll()
-        resetAlarmsCounter = 0
-        print("Reset all alarms.")        
+    if resetAlarmsCounter > ALARM_RESET_TH:
+        try:
+            resetAll()
+            resetAlarmsCounter = 0
+            print(">>>>>>>>>>> Reset all alarms.")   
+        except Exception as e:  
+            print(e)
 
     time.sleep( DELAY )
     print("")
